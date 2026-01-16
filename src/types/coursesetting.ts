@@ -1,0 +1,60 @@
+export interface CourseSetting {
+    id: number;
+    uuid: string;
+    course_id: number;
+    banner: string;
+    overview: string;
+    course_demo: string;
+    duration_years: number;
+    duration_months: number;
+    duration_days: number;
+    schedule: string;
+    end_date: string | null;
+    y_month: number ;
+    y_day: number;
+    m_month: number;
+    m_day: number;
+    w_week: number;
+    w_days: string;
+    d_days: number;
+    accreditation: string;
+    extendedvalidity_years: number;
+    extendedvalidity_months: number;
+    extendedvalidity_days: number;
+    brochure: string;
+    cohert_learning_image: string;
+    cohert_learning_overview: string;
+    course_demo_mobile: string;
+    course_start_date: string;
+    financial_aid: string;
+    is_preferred_course: number;
+    rating: string;
+    what_you_will_learn: string;
+    course_demo_url: string;
+    course_demo_mobile_url: string;
+    children_course: string | null;
+    is_kyc_required: number;
+    banner_alt_tag: string;
+    enable_contact_programs: number;
+    enable_index_tag: number;
+    trending_courses_ordering: number;
+    thumbnail_mobile: string;
+    samplecertificate:[
+        {
+            certificate_url: string | null;
+            cpd_url: string | null;
+            cpdback_url: string | null;
+            other: string | null;
+        }
+    ];
+    thumbnail_web: string;
+    partner_coursecode: string;
+    speciality_courses_ordering: number;
+    disclosure: string;
+    summary: string | null;
+    speciality_type: string;
+    pedagogy: string | null;
+    alumni_work: string | null;
+    created_at: string;
+    updated_at: string;
+}
