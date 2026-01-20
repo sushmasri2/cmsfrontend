@@ -8,6 +8,7 @@ import { Modal } from "@/components/ui/modal";
 import { DeleteCourse } from "@/lib/courses-api";
 import { useState } from "react";
 import { showToast } from "@/lib/toast";
+import { useI18n } from "@/hooks/useI18n";
 
 interface CourseGridCardProps {
   course: Course;
@@ -19,6 +20,7 @@ export function CourseGridCard({
   onCourseDeleted
 }: CourseGridCardProps) {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const { t } = useI18n();
 
   const openDeleteModal = () => setIsDeleteModalOpen(true);
   const closeDeleteModal = () => setIsDeleteModalOpen(false);
@@ -119,8 +121,8 @@ export function CourseGridCard({
         onOpenChange={setIsDeleteModalOpen}
         type="confirmation"
         variant="delete"
-        title="Delete Course"
-        message={`Are you sure you want to delete the course "${course.course_name}"? This action cannot be undone.`}
+        title={t('courses.deleteCourse')}
+        message={t('courses.deleteCourseConfirmation', { name: course.course_name })}
         confirmText="Delete"
         cancelText="Cancel"
         onConfirm={confirmDelete}

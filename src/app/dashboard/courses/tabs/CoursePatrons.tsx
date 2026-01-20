@@ -6,8 +6,8 @@ import { useEffect, useState } from "react";
 import Table from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Trash2, Edit, Plus } from "lucide-react";
-import { ValidatedInput } from "./components/ValidatedFormComponents";
-import { usePatronValidation } from "./hooks/usePatronValidation";
+import { ValidatedInput } from "../shared/ValidatedInput";
+import { usePatronValidation } from "../hooks/usePatronValidation";
 import { showToast } from "@/lib/toast";
 import { Modal } from "@/components/ui/modal";
 

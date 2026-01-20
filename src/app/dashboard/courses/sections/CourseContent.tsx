@@ -2,8 +2,8 @@
 
 import { Course } from "@/types/course";
 import { CourseSettingsPartialFormData } from "@/types/course-settings-form";
-import { CourseSettingsData, CourseSettingsActions } from "../../hooks/useCourseSettingsData";
-import { ValidatedTextarea } from "../ValidatedFormComponents";
+import { CourseSettingsData, CourseSettingsActions } from "../hooks/useCourseSettingsData";
+import { ValidatedTextarea } from "../shared/ValidatedTextarea";
 
 interface CourseContentProps {
     courseData?: Course | null;

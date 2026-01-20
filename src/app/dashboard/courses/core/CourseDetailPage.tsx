@@ -1,7 +1,7 @@
 "use client";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import styles from './createcourse.module.css';
+import styles from "../createcourse.module.css";
 import { MonitorStop, TabletSmartphone } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
@@ -9,32 +9,22 @@ import { Course } from "@/types/course";
 import { GetCourseById } from "@/lib/courses-api";
 import { useApiCache } from "@/hooks/use-api-cache";
 import { setGlobalCacheInstance } from "@/lib/cache-utils";
+import { useI18n } from "@/hooks/useI18n";
 
 // Import tab content components
-import CourseStructure from "./coursestructure";
-import CourseSettings from "./coursesettings";
-import CoursePrice from "./courseprice";
-import Seo from "./courseseo";
-import RecommendedCourses from "./recommendedcourses";
-import Patrons from "./coursepatrons";
-import Logs from "./courselogs";
-import FAQs from "./coursefaqs";
-import SampleCertificate from "./samplecertificate";
+import CourseStructure from "../tabs/CourseStructure";
+import CourseSettings from "../tabs/CourseSettings";
+import CoursePrice from "../tabs/CoursePrice";
+import Seo from "../tabs/CourseSeo"
+import RecommendedCourses from "../tabs/RecommendedCourses";
+import Patrons from "../tabs/CoursePatrons";
+import Logs from "../tabs/CourseLogs";
+import FAQs from "../tabs/CourseFaqs";
+import SampleCertificate from "../tabs/SampleCertificate";
 
-const tabList = [
-  { value: "coursestructure", label: "Course Structure", Component: CourseStructure, path: "coursestructure" },
-  { value: "coursesettings", label: "Course Settings", Component: CourseSettings, path: "coursesettings" },
-  { value: "courseprice", label: "Course Price", Component: CoursePrice, path: "courseprice" },
-  { value: "seo", label: "SEO", Component: Seo, path: "seo" },
-  { value: "faqs", label: "FAQs", Component: FAQs, path: "faqs" },
-  { value: "samplecertificate", label: "Sample Certificate", Component: SampleCertificate, path: "samplecertificate" },
-  { value: "recommendedcourses", label: "Recommended Courses", Component: RecommendedCourses, path: "recommendedcourses" },
-  { value: "patrons", label: "Patrons", Component: Patrons, path: "patrons" },
-  { value: "logs", label: "Logs", Component: Logs, path: "logs" },
-];
 const validTabs = ["coursestructure", "coursesettings", "courseprice", "seo","faqs", "samplecertificate", "recommendedcourses", "patrons", "logs"];
 
-export default function CreateCourse() {
+export default function CourseDetailPage() {
   const router = useRouter();
   const pathname = usePathname();
   const cacheInstance = useApiCache();
@@ -52,6 +42,19 @@ export default function CreateCourse() {
   const [lastCourseId, setLastCourseId] = useState<number | null>(null);
   const searchParams = useSearchParams();
   const courseId = Number(searchParams.get("id") ?? 0);
+  const { t } = useI18n();
+
+  const tabList = [
+    { value: "coursestructure", label: t("courses.courseStructure"), Component: CourseStructure, path: "coursestructure" },
+    { value: "coursesettings", label: t("courses.courseSettings"), Component: CourseSettings, path: "coursesettings" },
+    { value: "courseprice", label: t("courses.coursePrice"), Component: CoursePrice, path: "courseprice" },
+    { value: "seo", label: t("courses.seo"), Component: Seo, path: "seo" },
+    { value: "faqs", label: t("courses.faqs"), Component: FAQs, path: "faqs" },
+    { value: "samplecertificate", label: t("courses.sampleCertificate"), Component: SampleCertificate, path: "samplecertificate" },
+    { value: "recommendedcourses", label: t("courses.recommendedCourses"), Component: RecommendedCourses, path: "recommendedcourses" },
+    { value: "patrons", label: t("courses.patrons"), Component: Patrons, path: "patrons" },
+    { value: "logs", label: t("courses.logs"), Component: Logs, path: "logs" },
+  ];
 
   useEffect(() => {
     setActiveTab(tabSegment);
@@ -124,11 +127,11 @@ export default function CreateCourse() {
     <div className={styles.container}>
       <div className={styles.header}>
         <div>
-          <h1>{courseData?.course_name || "New Course"}</h1>
+          <h1>{courseData?.course_name || t("courses.newCourse")}</h1>
         </div>
         <div className={styles.courseSectionButtons} >
-          <Button variant='glass' title="Preview on Desktop"><MonitorStop /></Button>
-          <Button variant='glass' title="Preview on Mobile"><TabletSmartphone /></Button>
+          <Button variant='glass' title={t("courses.previewOnDesktop")}><MonitorStop /></Button>
+          <Button variant='glass' title={t("courses.previewOnMobile")}><TabletSmartphone /></Button>
         </div>
       </div>
       <div className={styles.row}>

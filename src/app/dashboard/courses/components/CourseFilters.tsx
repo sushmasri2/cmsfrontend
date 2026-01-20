@@ -14,6 +14,7 @@ import { CourseCategory } from "@/types/coursecategory";
 import { CourseType } from "@/types/coursetype";
 import { useState, useMemo } from "react";
 import { CreatingCourse } from "./CreateCourseModal";
+import { useI18n } from "@/hooks/useI18n";
 
 interface CourseFiltersProps {
   searchQuery: string;
@@ -31,13 +32,6 @@ interface CourseFiltersProps {
   courseCount: number;
 }
 
-const sortBy = [
-  { label: "Newest", value: "newest" },
-  { label: "Oldest", value: "oldest" },
-  { label: "A-Z", value: "a-z" },
-  { label: "Z-A", value: "z-a" },
-];
-
 export function CourseFilters({
   searchQuery,
   setSearchQuery,
@@ -54,26 +48,32 @@ export function CourseFilters({
   courseCount
 }: CourseFiltersProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { t } = useI18n();
   
+  const sortBy = useMemo(() => [
+    { label: t('courses.newest'), value: "newest" },
+    { label: t('courses.oldest'), value: "oldest" },
+    { label: t('courses.alphabeticalAsc'), value: "a-z" },
+    { label: t('courses.alphabeticalDesc'), value: "z-a" },
+  ], [t]);
+
   // Memoize category options to prevent recreation on every render
   const categoryOptions = useMemo(() => [
-    { label: 'All Categories', value: '' },
+    { label: t('courses.allCategories'), value: '' },
     ...courseCategoryList.map(cat => ({
       label: cat.name,
       value: cat.id.toString()
     }))
-  ], [courseCategoryList]);
+  ], [courseCategoryList, t]);
 
   // Memoize course type options to prevent recreation on every render
   const courseTypeOptions = useMemo(() => [
-    { label: 'All Course Types', value: '' },
+    { label: t('courses.allCourseTypes'), value: '' },
     ...courseTypeList.map(type => ({
       label: type.name,
       value: type.id.toString()
     }))
-  ], [courseTypeList]);
-
-  // Shared components
+  ], [courseTypeList, t]);
   const ViewToggle = useMemo(() => (
     <div className="flex items-center bg-gray-100 rounded-lg p-1">
       <Button
@@ -117,7 +117,7 @@ export function CourseFilters({
       disabled={!hasActiveFilters}
       className={!hasActiveFilters ? 'opacity-50 cursor-not-allowed' : ''}
     >
-      <RefreshCw className="h-4 w-4" /> Reset
+      <RefreshCw className="h-4 w-4" /> {t('courses.reset')}
     </Button>
   )
 
@@ -131,11 +131,11 @@ export function CourseFilters({
       <Plus size={16} />
       {mobile ? (
         <>
-          <span className="hidden sm:inline">Create New Course</span>
-          <span className="sm:hidden">Create</span>
+          <span className="hidden sm:inline">{t('courses.createNewCourse')}</span>
+          <span className="sm:hidden">{t('common.add')}</span>
         </>
       ) : (
-        <span>Create New Course</span>
+        <span>{t('courses.createNewCourse')}</span>
       )}
     </Button>
   );
@@ -143,7 +143,7 @@ export function CourseFilters({
   const FilterControls = useMemo(() => (
     <>
       <Input
-        placeholder="Search courses..."
+        placeholder={t('courses.searchCourses')}
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
         className="rounded-full border-gray-300 w-full"
@@ -154,7 +154,7 @@ export function CourseFilters({
         onChange={val => {
           if (typeof val === 'string') setSelectedCategory(val);
         }}
-        placeholder="Select Category"
+        placeholder={t('courses.selectCategory')}
       />
       <Select2
         options={courseTypeOptions}
@@ -162,7 +162,7 @@ export function CourseFilters({
         onChange={val => {
           if (typeof val === 'string') setSelectedCourseType(val);
         }}
-        placeholder="Select Course Type"
+        placeholder={t('courses.selectCourseType')}
       />
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
@@ -188,7 +188,7 @@ export function CourseFilters({
         </DropdownMenuContent>
       </DropdownMenu>
     </>
-  ), [searchQuery, setSearchQuery, selectedCategory, setSelectedCategory, selectedCourseType, setSelectedCourseType, sortByOption, setSortByOption, categoryOptions, courseTypeOptions]);
+  ), [t, searchQuery, categoryOptions, selectedCategory, courseTypeOptions, selectedCourseType, sortBy, sortByOption, setSearchQuery, setSelectedCategory, setSelectedCourseType, setSortByOption]);
 
   return (
     <>
@@ -197,7 +197,7 @@ export function CourseFilters({
         <div className="block xl:hidden">
           <div className="flex items-center justify-between mb-4">
             <h1 className="text-lg font-medium text-gray-900">
-              All Courses ({courseCount})
+              {t('dashboard.coursesBuilder')} ({courseCount} {t('common.total')})
             </h1>
             <div className="flex items-center gap-3">
               {resetButton()}
@@ -215,7 +215,7 @@ export function CourseFilters({
         <div className="hidden xl:flex items-center justify-between gap-6">
           <div className="flex-shrink-0">
             <h1 className="text-lg font-medium text-gray-900 whitespace-nowrap">
-              All Courses ({courseCount})
+              {t('dashboard.coursesBuilder')} ({courseCount} {t('common.total')})
             </h1>
           </div>
 

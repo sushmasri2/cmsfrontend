@@ -11,6 +11,7 @@ import { CreateCourse } from '@/lib/courses-api';
 import { showToast } from '@/lib/toast';
 import { useApiCache } from '@/hooks/use-api-cache';
 import { validateField, courseValidationRules, ValidationError as ValidationErrorType } from '../utils/validation';
+import { useI18n } from '@/hooks/useI18n';
 
 interface APIValidationError extends Error {
     isValidationError?: boolean;
@@ -133,6 +134,7 @@ export const CreatingCourse: React.FC<CreateCourseProps> = ({
 }) => {
     const router = useRouter();
     const { invalidateRelatedCache } = useApiCache();
+    const { t } = useI18n();
     const [formData, setFormData] = useState(INITIAL_FORM_STATE);
     const [errors, setErrors] = useState(INITIAL_FORM_STATE);
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -256,19 +258,19 @@ export const CreatingCourse: React.FC<CreateCourseProps> = ({
         <Modal
             open={isOpen}
             onClose={handleClose}
-            title="Create New Course"
+            title={t('courses.createNewCourseModal')}
             size="lg"
             footer={
                 <div className="flex gap-3 justify-end">
                     <Button variant="outline" onClick={handleClose}>
-                        Cancel
+                        {t('common.cancel')}
                     </Button>
                     <Button
                         variant="primaryBtn"
                         disabled={isSubmitting}
                         onClick={handleSubmit}
                     >
-                        {isSubmitting ? 'Creating...' : 'Create Course'}
+                        {isSubmitting ? t('courses.modalCreating') : t('courses.modalCreateCourse')}
                     </Button>
                 </div>
             }
@@ -277,13 +279,13 @@ export const CreatingCourse: React.FC<CreateCourseProps> = ({
                 <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Category Type <span className="text-red-500">*</span>
+                            {t('courses.modalCategoryType')} <span className="text-red-500">*</span>
                         </label>
                         <Select2
                             className={`w-full ${errors.category ? 'border-red-500' : ''}`}
                             value={formData.category}
                             options={[
-                                { value: '', label: 'Select Category' },
+                                { value: '', label: t('courses.modalSelectCategory') },
                                 ...courseCategoryList.map(cat => ({
                                     value: String(cat.id),
                                     label: cat.name
@@ -302,13 +304,13 @@ export const CreatingCourse: React.FC<CreateCourseProps> = ({
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Course Type <span className="text-red-500">*</span>
+                            {t('courses.modalCourseType')} <span className="text-red-500">*</span>
                         </label>
                         <Select2
                             className={`w-full ${errors.courseType ? 'border-red-500' : ''}`}
                             value={formData.courseType}
                             options={[
-                                { value: '', label: 'Select Course Type' },
+                                { value: '', label: t('courses.modalSelectCourseType') },
                                 ...courseTypeList.map(type => ({
                                     value: String(type.id),
                                     label: type.name
@@ -327,11 +329,11 @@ export const CreatingCourse: React.FC<CreateCourseProps> = ({
                 </div>
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Course Title <span className="text-red-500">*</span>
+                        {t('courses.modalCourseTitle')} <span className="text-red-500">*</span>
                     </label>
                     <Input
                         name="courseTitle"
-                        placeholder="e.g., Medical Fundamentals"
+                        placeholder={t('courses.modalEnterCourseTitle')}
                         value={formData.title}
                         onChange={(e) => {
                             handleTitleChange(e.target.value);
@@ -345,11 +347,11 @@ export const CreatingCourse: React.FC<CreateCourseProps> = ({
                 <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Course Name <span className="text-red-500">*</span>
+                            {t('courses.modalCourseName')} <span className="text-red-500">*</span>
                         </label>
                         <Input
                             name="courseName"
-                            placeholder="e.g., Bachelor of Medicine and Surgery"
+                            placeholder={t('courses.modalEnterCourseName')}
                             value={formData.name}
                             onChange={(e) => {
                                 setFormData(prev => ({ ...prev, name: e.target.value }));
@@ -363,11 +365,11 @@ export const CreatingCourse: React.FC<CreateCourseProps> = ({
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Course Card Title <span className="text-red-500">*</span>
+                            {t('courses.modalCourseCardTitle')} <span className="text-red-500">*</span>
                         </label>
                         <Input
                             name="courseCardTitle"
-                            placeholder="e.g., Learn Medical Basics"
+                            placeholder={t('courses.modalEnterCourseCardTitle')}
                             value={formData.cardTitle}
                             onChange={(e) => {
                                 setFormData(prev => ({ ...prev, cardTitle: e.target.value }));
@@ -382,11 +384,11 @@ export const CreatingCourse: React.FC<CreateCourseProps> = ({
                 </div>
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                        One Line Description <span className="text-red-500">*</span>
+                        {t('courses.modalOneLineDescription')} <span className="text-red-500">*</span>
                     </label>
                     <Textarea
                         name="courseDescription"
-                        placeholder="Brief description of the course content and objectives..."
+                        placeholder={t('courses.modalEnterOneLineDescription')}
                         value={formData.description}
                         onChange={(e) => {
                             setFormData(prev => ({ ...prev, description: e.target.value }));

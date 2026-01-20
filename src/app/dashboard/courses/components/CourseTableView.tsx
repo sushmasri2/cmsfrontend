@@ -9,6 +9,7 @@ import { Modal } from "@/components/ui/modal";
 import { DeleteCourse } from "@/lib/courses-api";
 import { useState } from "react";
 import { showToast } from "@/lib/toast";
+import { useI18n } from "@/hooks/useI18n";
 
 interface CourseTableViewProps {
   courses: Course[];
@@ -21,6 +22,7 @@ export function CourseTableView({
   onSort,
   onCourseDeleted
 }: CourseTableViewProps) {
+  const { t } = useI18n();
   const statusColor: Record<string, string> = {
     active: "bg-green-100 text-green-800",
     inactive: "bg-red-100 text-red-800",
@@ -66,7 +68,7 @@ export function CourseTableView({
       <Table
         columns={[
           {
-            header: "Course Name",
+            header: t('courses.courseName'),
             accessor: "course_name",
             sortable: true,
             render: (value, row) => (
@@ -76,22 +78,22 @@ export function CourseTableView({
             )
           },
           {
-            header: "Category",
+            header: t('courses.category'),
             accessor: "category_name",
             render: (value) => String(value) || "-"
           },
           {
-            header: "Course Type",
+            header: t('courses.courseType'),
             accessor: "type_name",
             sortable: true,
             render: (value) => String(value) || "-"
           },
           {
-            header: "Duration",
+            header: t('courses.duration'),
             accessor: "duration"
           },
           {
-            header: "Price (₹)",
+            header: `${t('courses.price')} (₹)`,
             accessor: "priceruppees",
             sortable: true,
             render: (_value, row) => (
@@ -101,7 +103,7 @@ export function CourseTableView({
             )
           },
           {
-            header: "Price ($)",
+            header: `${t('courses.price')} ($)`,
             accessor: "pricedollars",
             sortable: true,
             render: (_value, row) => (
@@ -111,7 +113,7 @@ export function CourseTableView({
             )
           },
           {
-            header: "Status",
+            header: t('courses.status'),
             accessor: "status",
             sortable: true,
             render: (value) => {
@@ -120,13 +122,13 @@ export function CourseTableView({
                 <span
                   className={`text-xs px-3 py-1 rounded-full font-medium ${statusColor[statusKey]}`}
                 >
-                  {value === 1 ? "Live" : "Draft"}
+                  {value === 1 ? t('common.active') : t('common.inactive')}
                 </span>
               );
             }
           },
           {
-            header: "Actions",
+            header: t('courses.actions'),
             accessor: "actions",
             render: (value, row) => (
               <div className="flex gap-2">
@@ -153,8 +155,8 @@ export function CourseTableView({
         onOpenChange={setIsDeleteModalOpen}
         type="confirmation"
         variant="delete"
-        title="Delete Course"
-        message={`Are you sure you want to delete the course "${courseToDelete?.course_name || ''}"? This action cannot be undone.`}
+        title={t('courses.deleteCourse')}
+        message={t('courses.deleteCourseConfirmation', { name: courseToDelete?.course_name || '' })}
         confirmText="Delete"
         cancelText="Cancel"
         onConfirm={confirmDelete}

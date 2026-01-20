@@ -3,8 +3,9 @@
 import Select2 from "@/components/ui/Select2";
 import { Course } from "@/types/course";
 import { CourseSettingsPartialFormData } from "@/types/course-settings-form";
-import { CourseSettingsData, CourseSettingsActions } from "../../hooks/useCourseSettingsData";
-import { ValidatedInput, ValidatedTextarea } from "../ValidatedFormComponents";
+import { CourseSettingsData, CourseSettingsActions } from "../hooks/useCourseSettingsData";
+import { ValidatedTextarea } from "../shared/ValidatedTextarea";
+import { ValidatedInput } from "../shared/ValidatedInput";
 import { Input } from "@/components/ui/input";
 
 interface CourseInformationProps {

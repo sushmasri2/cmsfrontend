@@ -6,8 +6,8 @@ import { Course } from "@/types/course";
 import { getCoursePricing, createCoursePricing, updateCoursePricing } from '@/lib/courseprice-api';
 import { CoursePricing } from '@/types/course-pricing';
 import { Button } from "@/components/ui/button";
-import { useCoursePricingValidation } from './hooks/useCoursePricingValidation';
-import { ValidatedInput } from "./components/ValidatedFormComponents";
+import { useCoursePricingValidation } from '../hooks/useCoursePricingValidation';
+import { ValidatedInput } from "../shared/ValidatedInput";
 import { showToast } from "@/lib/toast";
 
 interface CoursePriceProps {

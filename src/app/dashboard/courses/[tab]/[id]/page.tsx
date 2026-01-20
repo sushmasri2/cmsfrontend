@@ -1,9 +1,9 @@
 "use client";
-import CreateCourse from "../../Createcourse";
+import CourseDetailPage from "../../core/CourseDetailPage";
 
 export default function CourseTabWithIdPage() {
   // Removed unused variables tab and id
 
   // This handles routes like /dashboard/courses/coursestructure/123
-  return <CreateCourse />;
+  return <CourseDetailPage />;
 }

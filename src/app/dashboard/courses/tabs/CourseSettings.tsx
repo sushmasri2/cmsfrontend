@@ -5,14 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Course } from "@/types/course";
 import { CourseSettingsPartialFormData } from "@/types/course-settings-form";
-import { useCourseSettingsData } from "./hooks/useCourseSettingsData";
-import { ValidationError } from "./utils/validation";
-import CourseInformation from "./components/coursesetting/CourseInformation";
-import VisualAssets from "./components/coursesetting//VisualAssets";
-import CourseContent from "./components/coursesetting//CourseContent";
-import CourseAdministration from "./components/coursesetting//CourseAdministration";
-import AccreditationCompliance from "./components/coursesetting//AccreditationCompliance";
-import AnalyticsAccessControl from "./components/coursesetting//AnalyticsAccessControl";
+import { useCourseSettingsData } from "../hooks/useCourseSettingsData";
+import { ValidationError } from "../utils/validation";
+import CourseInformation from "../sections/CourseInformation";
+import VisualAssets from "../sections/VisualAssets";
+import CourseContent from "../sections/CourseContent";
+import CourseAdministration from "../sections/CourseAdministration";
+import AccreditationCompliance from "../sections/AccreditationCompliance";
+import AnalyticsAccessControl from "../sections/AnalyticsAccessControl";
 import { showToast } from "@/lib/toast";
 
 interface CourseSettingsProps {

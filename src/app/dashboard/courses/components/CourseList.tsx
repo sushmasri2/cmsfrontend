@@ -4,6 +4,7 @@ import { Course } from "@/types/course";
 import { CourseGridCard } from "./CourseGridCard";
 import { CourseTableView } from "./CourseTableView";
 import Pagination from "@/components/ui/pagination2";
+import { useI18n } from "@/hooks/useI18n";
 
 interface CourseListProps {
   view: string;
@@ -29,6 +30,7 @@ export function CourseList({
   onTableSort,
   onCourseDeleted
 }: CourseListProps) {
+  const { t } = useI18n();
   const paginationData = {
     total: totalCourses,
     totalPages,
@@ -45,7 +47,7 @@ export function CourseList({
   };
 
   if (courses.length === 0) {
-    return <p className="text-gray-500">No courses found.</p>;
+    return <p className="text-gray-500">{t('courses.noCoursesFound')}</p>;
   }
 
   return (

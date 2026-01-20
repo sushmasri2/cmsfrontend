@@ -4,8 +4,9 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Course } from "@/types/course";
 import { CourseSettingsPartialFormData } from "@/types/course-settings-form";
-import { ValidatedInput, ValidatedTextarea } from "./components/ValidatedFormComponents";
-import { useCourseSeoValidation } from "./hooks/useCourseSeoValidation";
+import { ValidatedInput } from "../shared/ValidatedInput";
+import { ValidatedTextarea } from "../shared/ValidatedTextarea";
+import { useCourseSeoValidation } from "../hooks/useCourseSeoValidation";
 import {UpdateCourse} from "@/lib/courses-api";
 import { showToast } from "@/lib/toast";
 
