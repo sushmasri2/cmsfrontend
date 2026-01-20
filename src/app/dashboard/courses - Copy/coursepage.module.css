@@ -1,0 +1,25 @@
+/* coursepage.module.css */
+.container {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  padding: 20px;
+}
+
+.header{
+  display: grid;
+  grid-template-columns: .5fr 2fr .5fr .2fr;
+  gap: 20px;
+}
+.courseInfo{
+  display: grid;
+  grid-template-columns: .7fr 1fr .5fr;
+  gap: 4px;
+}
+.h2{
+  font-size: 1.125rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
