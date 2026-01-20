@@ -3,7 +3,9 @@
 import Select2 from "@/components/ui/Select2";
 import { Course } from "@/types/course";
 import { CourseSettingsPartialFormData } from "@/types/course-settings-form";
-import { CourseSettingsData, CourseSettingsActions } from "../hooks/useCourseSettingsData";
+import { useCourseUpdate } from '../hooks/useCourseUpdate';
+import { useValidation } from '../hooks/useValidation';
+// import { CourseSettingsData, CourseSettingsActions } from "../hooks/useCourseSettingsData";
 import { ValidatedTextarea } from "../shared/ValidatedTextarea";
 
 interface AccreditationComplianceProps {
