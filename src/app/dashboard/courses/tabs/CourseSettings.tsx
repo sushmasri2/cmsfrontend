@@ -1,290 +1,148 @@
-"use client";
+'use client';
 
 import { useState, useEffect } from "react";
+import { Course } from "@/types/course";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Course } from "@/types/course";
-import { CourseSettingsPartialFormData } from "@/types/course-settings-form";
-import { useCourseSettingsData } from "../hooks/useCourseSettingsData";
-import { ValidationError } from "../utils/validation";
+import { useCourseUpdate } from "../hooks/useCourseUpdate";
+import { useUnifiedValidation } from "../hooks/useUnifiedValidation";
+import { useAccordionData } from "../hooks/useAccordionData";
 import CourseInformation from "../sections/CourseInformation";
 import VisualAssets from "../sections/VisualAssets";
 import CourseContent from "../sections/CourseContent";
 import CourseAdministration from "../sections/CourseAdministration";
 import AccreditationCompliance from "../sections/AccreditationCompliance";
 import AnalyticsAccessControl from "../sections/AnalyticsAccessControl";
-import { showToast } from "@/lib/toast";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface CourseSettingsProps {
-    courseData?: Course | null;
+  courseData: Course;
 }
 
+const ACCORDION_SECTIONS = [
+  { id: "course-information", label: "Course Information", Component: CourseInformation },
+  { id: "visual-assets-media", label: "Visual Assets & Media", Component: VisualAssets },
+  { id: "course-content-support", label: "Course Content & Support", Component: CourseContent },
+  { id: "course-administration", label: "Course Administration", Component: CourseAdministration },
+  { id: "accreditation-compliance", label: "Accreditation & Compliance", Component: AccreditationCompliance },
+  { id: "analytics-access-control", label: "Analytics & Access Control", Component: AnalyticsAccessControl },
+];
+
 export default function CourseSettings({ courseData }: CourseSettingsProps) {
-    // Complete list of all accordion items
-    const allItemIds = [
-        "course-information",
-        "visual-assets-media",
-        "course-content-support",
-        "course-administration",
-        "accreditation-compliance",
-        "analytics-access-control",
-    ];
+  const [openItems, setOpenItems] = useState<string[]>([]);
+  const [formData, setFormData] = useState<Record<string, unknown>>({});
 
+  const { mutate: updateCourse, isPending } = useCourseUpdate();
+  const { validateTab, errors, clearErrors } = useUnifiedValidation();
+  const { loadSectionData, isLoaded, isLoading } = useAccordionData(courseData.uuid);
 
-    const [openItems, setOpenItems] = useState<string[]>([]);
-    const [formData, setFormData] = useState<CourseSettingsPartialFormData>({});
+  useEffect(() => {
+    if (courseData) {
+      setFormData({ ...courseData });
+    }
+  }, [courseData]);
 
-    // Use the custom hook for data fetching
-    const [data, actions] = useCourseSettingsData(courseData);
+  const handleAccordionChange = (newOpenItems: string[]) => {
+    setOpenItems(newOpenItems);
+    newOpenItems.forEach(sectionId => {
+      if (!isLoaded(sectionId)) {
+        loadSectionData(sectionId);
+      }
+    });
+  };
 
-    useEffect(() => {
-        if (!data.isLoading && courseData) {
-            const mergedData = {
-                ...courseData,
-                ...data.courseSettings,
-            };
-            setFormData({
-                ...mergedData,
-                rating: mergedData.rating !== undefined ? Number(mergedData.rating) : undefined,
-            });
+  const toggleAll = () => {
+    if (openItems.length === ACCORDION_SECTIONS.length) {
+      setOpenItems([]);
+    } else {
+      const allIds = ACCORDION_SECTIONS.map(s => s.id);
+      setOpenItems(allIds);
+      allIds.forEach(id => {
+        if (!isLoaded(id)) {
+          loadSectionData(id);
         }
-    }, [data.isLoading, courseData, data.courseSettings]);
+      });
+    }
+  };
 
-    // Toggle all accordion sections
-    const toggleAll = () => {
-        if (openItems.length === allItemIds.length) {
-            setOpenItems([]); // collapse all
-        } else {
-            setOpenItems(allItemIds); // expand all
-        }
-    };
+  const handleInputChange = (field: string, value: unknown) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
 
-    const handleInputChange = (
-        field: keyof CourseSettingsPartialFormData,
-        value: string | number | boolean | string[]
-    ) => {
-        setFormData(prev => ({ ...prev, [field]: value }));
-    };
+  const handleSave = () => {
+    if (!courseData?.uuid) return;
 
-    // Map fields to their accordion sections for focusing
-    const fieldToAccordionMap: Record<string, string> = {
-        'course_name': 'course-information',
-        'one_line_description': 'course-information',
-        'description': 'course-information',
-        'summary': 'course-information',
-        'category_id': 'course-information',
-        'course_type_id': 'course-information',
-        'speciality_type': 'course-information',
-        'banner': 'visual-assets-media',
-        'banner_alt_tag': 'visual-assets-media',
-        'thumbnail_web': 'visual-assets-media',
-        'thumbnail_mobile': 'visual-assets-media',
-        'overview': 'course-content-support',
-        'what_you_will_learn': 'course-content-support',
-        'course_demo_url': 'course-content-support',
-        'course_demo_mobile_url': 'course-content-support',
-        'duration_years': 'course-administration',
-        'duration_months': 'course-administration',
-        'duration_days': 'course-administration',
-        'course_start_date': 'course-administration',
-        'end_date': 'course-administration',
-        'schedule': 'course-administration',
-        'accreditation': 'accreditation-compliance',
-        'financial_aid': 'accreditation-compliance',
-        'is_kyc_required': 'analytics-access-control',
-        'enable_contact_programs': 'analytics-access-control'
-    };
-
-    // Focus on the first field with error
-    const focusOnFirstError = (errors: ValidationError[]) => {
-        if (errors.length === 0) return;
-
-        const firstError = errors[0];
-        const accordionSection = fieldToAccordionMap[firstError.field];
-
-        if (accordionSection) {
-            // Expand the accordion section if it's not already open
-            if (!openItems.includes(accordionSection)) {
-                setOpenItems(prev => [...prev, accordionSection]);
-            }
-
-            // Wait for accordion to expand, then focus and scroll to the field
-            setTimeout(() => {
-                const fieldElement = document.querySelector(`[name="${firstError.field}"], [id="${firstError.field}"]`) as HTMLElement;
-                if (fieldElement) {
-                    fieldElement.focus();
-                    fieldElement.scrollIntoView({
-                        behavior: 'smooth',
-                        block: 'center'
-                    });
-
-                    // Add a visual highlight effect
-                    fieldElement.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.5)';
-                    setTimeout(() => {
-                        fieldElement.style.boxShadow = '';
-                    }, 3000);
-                }
-            }, 300);
-        }
-    };
-
-    // Handle publish/update course button click
-    const handlePublishUpdate = async () => {
-        try {
-            if (!courseData) {
-                showToast("Course data is required for update", "error");
-                return;
-            }
-
-            // Call our new updateCourse function from the hook
-            await actions.updateCourse(courseData, formData);
-            
-            // Show success message
-            showToast(
-                !courseData ? "🚀 Course published successfully!" : "✏️ Course updated successfully!",
-                "success"
-            );
-            
-        } catch (error) {
-            console.error("❌ Error updating course:", error);
-            
-            // Show error message to user
-            const errorMessage = error instanceof Error ? error.message : "An error occurred while updating the course";
-            showToast(errorMessage, "error");
-            
-            // If it's a validation error, try to focus on the first error field
-            if (errorMessage.includes("Validation failed")) {
-                // Re-run validation to get the errors and focus on the first one
-                const validationResult = actions.validation.validateForm(formData, data.courseSettings || undefined);
-                if (!validationResult.isValid) {
-                    focusOnFirstError(validationResult.errors);
-                }
-            }
-        }
-    };
-
-    // Show loading state
-    if (data.isLoading) {
-        return (
-            <div className="flex items-center justify-center h-64">
-                <div className="text-lg">Loading course settings...</div>
-            </div>
-        );
+    // Validate entire form
+    const validation = validateTab.validateCourseSettings(formData);
+    
+    if (!validation.isValid) {
+      console.error('Validation errors:', validation.errors);
+      return;
     }
 
-    // Show error state
-    if (data.error) {
-        return (
-            <div className="flex items-center justify-center h-64">
-                <div className="text-lg text-red-600">Error: {data.error}</div>
-            </div>
-        );
-    }
+    updateCourse({
+      courseUuid: courseData.uuid,
+      data: formData,
+    });
+  };
 
-    return (
-        <div>
-            <div className="flex gap-2 mb-4 justify-end">
-                <Button onClick={toggleAll}>
-                    {openItems.length === allItemIds.length ? "Collapse All" : "Expand All"}
-                </Button>
-            </div>
+  return (
+    <div>
+      <div className="flex gap-2 mb-4 justify-end">
+        <Button onClick={toggleAll} variant="outline">
+          {openItems.length === ACCORDION_SECTIONS.length ? "Collapse All" : "Expand All"}
+        </Button>
+      </div>
 
-            <Accordion type="multiple" value={openItems} onValueChange={setOpenItems} className="w-full">
-                <AccordionItem className="border rounded-lg" value="course-information">
-                    <AccordionTrigger className="flex bg-[#e4e7eb] px-5">
-                        <h2>Course Information</h2>
-                    </AccordionTrigger>
-                    <AccordionContent>
-                        <CourseInformation
-                            formData={formData}
-                            data={data}
-                            actions={actions}
-                            onInputChange={handleInputChange}
-                        />
-                    </AccordionContent>
-                </AccordionItem>
+      <Accordion
+        type="multiple"
+        value={openItems}
+        onValueChange={handleAccordionChange}
+        className="w-full space-y-3"
+      >
+        {ACCORDION_SECTIONS.map(({ id, label, Component }) => (
+          <AccordionItem key={id} value={id} className="border rounded-lg">
+            <AccordionTrigger className="bg-gray-50 px-5 py-3 hover:bg-gray-100">
+              <h3 className="text-lg font-semibold">{label}</h3>
+            </AccordionTrigger>
+            <AccordionContent className="p-5">
+              {isLoading(id) ? (
+                <div className="space-y-3">
+                  <Skeleton className="h-10 w-full" />
+                  <Skeleton className="h-10 w-full" />
+                  <Skeleton className="h-10 w-full" />
+                </div>
+              ) : (
+                <Component
+                  courseData={courseData}
+                  formData={formData}
+                  onInputChange={handleInputChange}
+                />
+              )}
+            </AccordionContent>
+          </AccordionItem>
+        ))}
+      </Accordion>
 
-                <AccordionItem className="border rounded-lg mt-3" value="visual-assets-media">
-                    <AccordionTrigger className="flex bg-[#e4e7eb] px-5">
-                        <h2>Visual Assets & Media</h2>
-                    </AccordionTrigger>
-                    <AccordionContent>
-                        <VisualAssets
-                            formData={formData}
-                            data={data}
-                            actions={actions}
-                            onInputChange={handleInputChange}
-                        />
-                    </AccordionContent>
-                </AccordionItem>
-
-                <AccordionItem className="border rounded-lg mt-3" value="course-content-support">
-                    <AccordionTrigger className="flex bg-[#e4e7eb] px-5">
-                        <h2>Course Content & Support</h2>
-                    </AccordionTrigger>
-                    <AccordionContent>
-                        <CourseContent
-                            formData={formData}
-                            data={data}
-                            actions={actions}
-                            onInputChange={handleInputChange}
-                        />
-                    </AccordionContent>
-                </AccordionItem>
-
-                <AccordionItem className="border rounded-lg mt-3" value="course-administration">
-                    <AccordionTrigger className="flex bg-[#e4e7eb] px-5">
-                        <h2>Course Administration</h2>
-                    </AccordionTrigger>
-                    <AccordionContent>
-                        <CourseAdministration
-                            formData={formData}
-                            data={data}
-                            actions={actions}
-                            onInputChange={handleInputChange}
-                        />
-                    </AccordionContent>
-                </AccordionItem>
-
-                <AccordionItem className="border rounded-lg mt-3" value="accreditation-compliance">
-                    <AccordionTrigger className="flex bg-[#e4e7eb] px-5">
-                        <h2>Accreditation & Compliance</h2>
-                    </AccordionTrigger>
-                    <AccordionContent>
-                        <AccreditationCompliance
-                            formData={formData}
-                            data={data}
-                            actions={actions}
-                            onInputChange={handleInputChange}
-                        />
-                    </AccordionContent>
-                </AccordionItem>
-
-                <AccordionItem className="border rounded-lg mt-3" value="analytics-access-control">
-                    <AccordionTrigger className="flex bg-[#e4e7eb] px-5">
-                        <h2>Analytics & Access Control</h2>
-                    </AccordionTrigger>
-                    <AccordionContent>
-                        <AnalyticsAccessControl
-                            formData={formData}
-                            data={data}
-                            actions={actions}
-                            onInputChange={handleInputChange}
-                        />
-                    </AccordionContent>
-                </AccordionItem>
-            </Accordion>
-
-            <div className="flex justify-end">
-                <Button className="mt-4" variant="secondary">Save as Draft</Button>
-                <Button
-                    className="mt-4 ml-2"
-                    variant="primaryBtn"
-                    onClick={handlePublishUpdate}
-                >
-                    {!courseData ? "Publish Course" : "Update Course"}
-                </Button>
-            </div>
+      {errors.length > 0 && (
+        <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <h4 className="font-semibold text-red-800 mb-2">Please fix the following errors:</h4>
+          <ul className="list-disc list-inside text-red-700 text-sm space-y-1">
+            {errors.map((error, idx) => (
+              <li key={idx}>{error.message}</li>
+            ))}
+          </ul>
         </div>
-    );
+      )}
+
+      <div className="flex justify-end gap-2 mt-6">
+        <Button variant="outline" onClick={clearErrors}>
+          Cancel
+        </Button>
+        <Button variant="default" onClick={handleSave} disabled={isPending}>
+          {isPending ? 'Saving...' : 'Save Changes'}
+        </Button>
+      </div>
+    </div>
+  );
 }

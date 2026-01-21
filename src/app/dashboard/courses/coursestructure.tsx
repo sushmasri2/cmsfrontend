@@ -1,7 +1,6 @@
-'use client';
+"use client";
 
 import { useState } from "react";
-import { Course } from "@/types/course";
 import {
   Accordion,
   AccordionContent,
@@ -17,10 +16,6 @@ import {
   Award,
 } from "lucide-react";
 
-interface CourseStructureProps {
-  courseData: Course;
-}
-
 type Activity = {
   id: string;
   title: string;
@@ -34,7 +29,7 @@ type Section = {
   activities: Activity[];
 };
 
-export default function CourseStructure({ courseData }: CourseStructureProps) {
+export default function CourseSections() {
   const [sections] = useState<Section[]>([
     {
       id: "section-1",
@@ -62,14 +57,9 @@ export default function CourseStructure({ courseData }: CourseStructureProps) {
       ],
     },
   ]);
-  console.log(courseData)
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl font-semibold">Course Structure</h2>
-      </div>
-
+    <div className="space-y-4 relative">
       <Accordion type="multiple" className="w-full">
         {sections.map((section) => (
           <AccordionItem
@@ -77,33 +67,36 @@ export default function CourseStructure({ courseData }: CourseStructureProps) {
             value={section.id}
             className="rounded-lg border bg-white mb-4"
           >
-            <AccordionTrigger className="px-4 py-3 hover:bg-gray-50">
+            <AccordionTrigger className="relative flex items-center justify-between px-4 py-2 hover:bg-gray-50">
               <div className="flex items-center gap-2 font-semibold text-lg">
                 <span>{section.title}</span>
               </div>
             </AccordionTrigger>
 
             <AccordionContent className="px-4 py-3">
-              <div className="space-y-3">
+              <div className="space-y-3 relative">
                 {section.activities.map((activity) => (
-                  <div
-                    key={activity.id}
-                    className="flex items-center gap-3 rounded-md border bg-white px-4 py-3 shadow-sm hover:bg-gray-50 transition-all cursor-pointer"
-                  >
-                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-50 text-blue-600">
-                      {activity.icon ? (
-                        (() => {
-                          const Icon = activity.icon;
-                          return <Icon className="h-4 w-4" />;
-                        })()
-                      ) : (
-                        <BookOpen className="h-4 w-4" />
-                      )}
-                    </span>
+                  <div key={activity.id}>
+                    <div className="flex items-center gap-3 rounded-md border bg-white px-4 py-3 shadow-sm hover:bg-gray-50 transition-all duration-200 cursor-pointer">
+                      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-50 text-blue-600">
+                        {activity.icon ? (
+                          (() => {
+                            const Icon = activity.icon;
+                            return <Icon className="h-4 w-4" />;
+                          })()
+                        ) : (
+                          <BookOpen className="h-4 w-4" />
+                        )}
+                      </span>
 
-                    <div className="flex-1">
-                      <p className="font-medium text-gray-900">{activity.title}</p>
-                      <p className="text-sm text-gray-500 capitalize">{activity.type}</p>
+                      <div className="flex-1">
+                        <p className="font-medium text-gray-900">
+                          {activity.title}
+                        </p>
+                        <p className="text-sm text-gray-500 capitalize">
+                          {activity.type}
+                        </p>
+                      </div>
                     </div>
                   </div>
                 ))}

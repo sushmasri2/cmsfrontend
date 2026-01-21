@@ -1,121 +1,106 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect } from "react";
 import { Course } from "@/types/course";
-import { CourseSettingsPartialFormData } from "@/types/course-settings-form";
+import { Button } from "@/components/ui/button";
 import { ValidatedInput } from "../shared/ValidatedInput";
 import { ValidatedTextarea } from "../shared/ValidatedTextarea";
-import { useCourseSeoValidation } from "../hooks/useCourseSeoValidation";
-import {UpdateCourse} from "@/lib/courses-api";
-import { showToast } from "@/lib/toast";
+import { useCourseUpdate } from "../hooks/useCourseUpdate";
+import { useUnifiedValidation } from "../hooks/useUnifiedValidation";
 
-interface CourseSeoProps {
-    courseData?: Course | null;
+interface CourseSEOProps {
+  courseData: Course;
 }
 
-export default function Seo({ courseData }: CourseSeoProps) {    // Form data state for tracking changes
-    const [formData, setFormData] = useState<CourseSettingsPartialFormData>({});
+export default function CourseSEO({ courseData }: CourseSEOProps) {
+  const [formData, setFormData] = useState({
+    seo_title: courseData?.seo_title || '',
+    seo_description: courseData?.seo_description || '',
+    seo_url: courseData?.seo_url || '',
+    sem_url: courseData?.sem_url || ''
+  });
 
-    // Validation hook
-    const [, validationActions] = useCourseSeoValidation();
+  const { mutate: updateCourse, isPending } = useCourseUpdate();
+  const { validateTab, getFieldError, validateSingleField } = useUnifiedValidation();
 
-    // Handler functions for form inputs
-    const handleSeoChange = (field: keyof CourseSettingsPartialFormData, value: string) => {
-        setFormData(prev => ({ ...prev, [field]: value }));
-        validationActions.validateSeoField(String(field), value);
-    };
+  useEffect(() => {
+    if (courseData) {
+      setFormData({
+        seo_title: courseData.seo_title || '',
+        seo_description: courseData.seo_description || '',
+        seo_url: courseData.seo_url || '',
+        sem_url: courseData.sem_url || ''
+      });
+    }
+  }, [courseData]);
 
-    const handleFormSubmit = () => {
-        const isValid = validationActions.validateAllSeo(formData);
-        
-        if (isValid && courseData?.uuid) {
-            // Submit the form data
-            UpdateCourse( courseData?.uuid, formData);
-            showToast('SEO details updated successfully', 'success');
-            // Add your API call here
-        } else {
-            console.error('Form validation failed');
-        }
-    };
+  const handleChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    validateSingleField(field, value);
+  };
 
-    const handleCancel = () => {
-        // Reset form to original data
-        const originalSeoData = {
+  const handleSave = () => {
+    if (!courseData?.uuid) return;
+
+    const validation = validateTab.validateSEO(formData);
+    if (!validation.isValid) return;
+
+    updateCourse({
+      courseUuid: courseData.uuid,
+      data: formData,
+    });
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <ValidatedInput
+          label="SEO Title"
+          value={formData.seo_title}
+          onChange={(e) => handleChange('seo_title', e.target.value)}
+          error={getFieldError('seo_title')}
+          placeholder="Enter SEO title"
+        />
+        <ValidatedInput
+          label="SEO URL"
+          value={formData.seo_url}
+          onChange={(e) => handleChange('seo_url', e.target.value)}
+          error={getFieldError('seo_url')}
+          placeholder="Enter SEO url (lowercase, hyphens only)"
+        />
+        <ValidatedInput
+          label="SEM URL"
+          value={formData.sem_url}
+          onChange={(e) => handleChange('sem_url', e.target.value)}
+          error={getFieldError('sem_url')}
+          placeholder="Enter SEM url"
+        />
+      </div>
+
+      <ValidatedTextarea
+        label="SEO Description"
+        value={formData.seo_description}
+        onChange={(e) => handleChange('seo_description', e.target.value)}
+        error={getFieldError('seo_description')}
+        placeholder="Enter SEO description"
+        rows={4}
+      />
+
+      <div className="flex justify-end gap-2">
+        <Button variant="outline" onClick={() => {
+          setFormData({
             seo_title: courseData?.seo_title || '',
             seo_description: courseData?.seo_description || '',
             seo_url: courseData?.seo_url || '',
             sem_url: courseData?.sem_url || ''
-        };
-        setFormData(originalSeoData);
-        validationActions.clearSeoErrors();
-    };
-
-    // Initialize form data when courseData changes
-    useEffect(() => {
-        if (courseData) {
-            const initialSeoData = {
-                seo_title: courseData.seo_title || '',
-                seo_description: courseData.seo_description || '',
-                seo_url: courseData.seo_url || '',
-                sem_url: courseData.sem_url || ''
-            };
-            setFormData(initialSeoData);
-        }
-    }, [courseData]);
-
-    return <>
-        <div className="grid grid-cols-3 gap-4">
-            <div>
-                <label className="text-md font-semibold text-gray-600">SEO Title</label>
-                <ValidatedInput
-                    type="text"
-                    placeholder="Enter SEO title"
-                    value={formData?.seo_title || ''}
-                    onChange={(e) => handleSeoChange('seo_title', e.target.value)}
-                    error={validationActions.getFieldError('seo_title')}
-                    className={validationActions.hasFieldError('seo_title') ? 'border-red-500' : ''}
-                />
-            </div>
-            <div>
-                <label className="text-md font-semibold text-gray-600">SEO URL</label>
-                <ValidatedInput
-                    type="text"
-                    placeholder="Enter SEO url"
-                    value={formData?.seo_url || ''}
-                    onChange={(e) => handleSeoChange('seo_url', e.target.value)}
-                    error={validationActions.getFieldError('seo_url')}
-                    className={validationActions.hasFieldError('seo_url') ? 'border-red-500' : ''}
-                />
-            </div>
-            <div>
-                <label className="text-md font-semibold text-gray-600">SEM URL</label>
-                <ValidatedInput
-                    type="text"
-                    placeholder="Enter SEM url"
-                    value={formData?.sem_url || ''}
-                    onChange={(e) => handleSeoChange('sem_url', e.target.value)}
-                    error={validationActions.getFieldError('sem_url')}
-                    className={validationActions.hasFieldError('sem_url') ? 'border-red-500' : ''}
-                />
-            </div>
-        </div>
-        <div>
-            <label className="text-md font-semibold text-gray-600">SEO Description</label>
-            <ValidatedTextarea
-                rows={4}
-                placeholder="Enter SEO description"
-                value={formData?.seo_description || ''}
-                onChange={(e) => handleSeoChange('seo_description', e.target.value)}
-                error={validationActions.getFieldError('seo_description')}
-                className={validationActions.hasFieldError('seo_description') ? 'border-red-500' : ''}
-            />
-        </div>
-        <div className="flex justify-end mt-4">
-            <Button className="me-2" onClick={handleCancel}>Cancel</Button>
-            <Button variant='primaryBtn' onClick={handleFormSubmit}>
-                {!courseData ? 'Create' : 'Update'}
-            </Button>
-        </div>
-    </>;
+          });
+        }}>
+          Reset
+        </Button>
+        <Button onClick={handleSave} disabled={isPending}>
+          {isPending ? 'Saving...' : 'Save SEO Settings'}
+        </Button>
+      </div>
+    </div>
+  );
 }
