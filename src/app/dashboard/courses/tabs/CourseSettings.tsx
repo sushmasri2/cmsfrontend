@@ -1,9 +1,11 @@
+// src/app/dashboard/courses/tabs/CourseSettings.tsx
 'use client';
 
 import { useState, useEffect } from "react";
 import { Course } from "@/types/course";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useCourseUpdate } from "../hooks/useCourseUpdate";
 import { useUnifiedValidation } from "../hooks/useUnifiedValidation";
 import { useAccordionData } from "../hooks/useAccordionData";
@@ -13,7 +15,6 @@ import CourseContent from "../sections/CourseContent";
 import CourseAdministration from "../sections/CourseAdministration";
 import AccreditationCompliance from "../sections/AccreditationCompliance";
 import AnalyticsAccessControl from "../sections/AnalyticsAccessControl";
-import { Skeleton } from "@/components/ui/skeleton";
 
 interface CourseSettingsProps {
   courseData: Course;

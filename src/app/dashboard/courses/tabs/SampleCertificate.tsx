@@ -1,3 +1,4 @@
+// src/app/dashboard/courses/tabs/SampleCertificate.tsx
 'use client';
 
 import { useState, useEffect } from "react";
@@ -9,7 +10,6 @@ import Select2 from "@/components/ui/Select2";
 import { Plus, Minus } from "lucide-react";
 import { getCourseSettings, updateCourseSettings } from "@/lib/coursesetting-api";
 import { showToast } from "@/lib/toast";
-import { console } from "inspector";
 
 interface CourseCertificatesProps {
   courseData: Course;
@@ -18,6 +18,13 @@ interface CourseCertificatesProps {
 interface CertificateItem {
   key: string;
   url: string;
+}
+
+interface CertificateData {
+  certificate_url?: string;
+  cpd_url?: string;
+  cpdback_url?: string;
+  other?: string;
 }
 
 export default function CourseCertificates({ courseData }: CourseCertificatesProps) {
@@ -42,7 +49,7 @@ export default function CourseCertificates({ courseData }: CourseCertificatesPro
 
   useEffect(() => {
     if (courseSettings?.samplecertificate?.length) {
-      const items: CertificateItem[] = courseSettings.samplecertificate.flatMap((item: any) => {
+      const items: CertificateItem[] = courseSettings.samplecertificate.flatMap((item) => {
         const result: CertificateItem[] = [];
         if (item.certificate_url) result.push({ key: 'certificate_url', url: item.certificate_url });
         if (item.cpd_url) result.push({ key: 'cpd_url', url: item.cpd_url });
@@ -73,29 +80,22 @@ export default function CourseCertificates({ courseData }: CourseCertificatesPro
   const handleUpdate = async () => {
     if (!courseSettings || !courseData) return;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const mergedCertificate: any = {
-      certificate_url: null,
-      cpd_url: null,
-      cpdback_url: null,
-      other: null,
-    };
+    const mergedCertificate: CertificateData = {};
 
     certificates.forEach(item => {
       if (item.url && item.url.trim()) {
-        mergedCertificate[item.key] = item.url;
+        mergedCertificate[item.key as keyof CertificateData] = item.url;
       }
     });
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const cleanedCertificate: any = {};
-    Object.entries(mergedCertificate).forEach(([key, value]) => {
-      if (value) cleanedCertificate[key] = value;
-    });
-
-    const updatedSettings = {
-      course_uuid: courseData.uuid,
-      samplecertificate: [cleanedCertificate]
+    // Type-safe update payload
+    const updatedSettings: Partial<CourseSetting> = {
+      samplecertificate: [mergedCertificate as {
+        certificate_url: string | null;
+        cpd_url: string | null;
+        cpdback_url: string | null;
+        other: string | null;
+      }]
     };
 
     try {
@@ -103,7 +103,8 @@ export default function CourseCertificates({ courseData }: CourseCertificatesPro
       setCourseSettings(result);
       showToast("Sample certificates updated successfully", "success");
     } catch (error) {
-      console.log("Failed to update certificates", error);
+      console.error("Failed to update certificates", error);
+      showToast("Failed to update certificates", "error");
     }
   };
 

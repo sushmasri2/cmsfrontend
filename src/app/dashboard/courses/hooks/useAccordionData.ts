@@ -1,5 +1,5 @@
+// src/app/dashboard/courses/hooks/useAccordionData.ts
 import { useCallback, useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
 import { getSpecialities } from '@/lib/specialities-api';
 import { getCourseInstructors } from '@/lib/instructor-api';
 import { getAccreditationPartners } from '@/lib/accreditation-partners-api';
@@ -55,9 +55,9 @@ const SECTION_DATA_CONFIG: Record<string, {
 };
 
 export function useAccordionData(courseUuid: string) {
-  const queryClient = useQueryClient();
   const [loadedSections, setLoadedSections] = useState<Set<string>>(new Set());
   const [loadingSection, setLoadingSection] = useState<string | null>(null);
+  const [cache, setCache] = useState<Record<string, unknown>>({});
 
   const loadSectionData = useCallback(async (sectionId: string) => {
     // Skip if already loaded
@@ -71,12 +71,21 @@ export function useAccordionData(courseUuid: string) {
     setLoadingSection(sectionId);
 
     try {
+      // Check cache first
+      const cacheKey = `accordion-section-${sectionId}-${courseUuid}`;
+      if (cache[cacheKey]) {
+        setLoadedSections(prev => new Set([...prev, sectionId]));
+        return;
+      }
+
       // Fetch data for this section
-      await queryClient.fetchQuery({
-        queryKey: ['accordion-section', sectionId, courseUuid],
-        queryFn: () => config.fetchFn(courseUuid),
-        staleTime: 5 * 60 * 1000, // 5 minutes
-      });
+      const data = await config.fetchFn(courseUuid);
+      
+      // Update cache
+      setCache(prev => ({
+        ...prev,
+        [cacheKey]: data
+      }));
 
       setLoadedSections(prev => new Set([...prev, sectionId]));
     } catch (error) {
@@ -84,7 +93,7 @@ export function useAccordionData(courseUuid: string) {
     } finally {
       setLoadingSection(null);
     }
-  }, [courseUuid, loadedSections, queryClient]);
+  }, [courseUuid, loadedSections, cache]);
 
   return {
     loadSectionData,

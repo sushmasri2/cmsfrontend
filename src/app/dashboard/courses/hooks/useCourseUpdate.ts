@@ -1,4 +1,5 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+// src/app/dashboard/courses/hooks/useCourseUpdate.ts
+import { useState } from 'react';
 import { courseService } from '../services/course.service';
 import { validateFields } from '../services/validation.service';
 import { showToast } from '@/lib/toast';
@@ -9,11 +10,24 @@ interface UpdateParams {
   invalidateKeys?: string[][];
 }
 
-export function useCourseUpdate() {
-  const queryClient = useQueryClient();
+interface UseCourseUpdateReturn {
+  mutate: (params: UpdateParams) => Promise<void>;
+  isPending: boolean;
+  isError: boolean;
+  error: Error | null;
+}
 
-  return useMutation({
-    mutationFn: async ({ courseUuid, data }: UpdateParams) => {
+export function useCourseUpdate(): UseCourseUpdateReturn {
+  const [isPending, setIsPending] = useState(false);
+  const [isError, setIsError] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+
+  const mutate = async ({ courseUuid, data }: UpdateParams) => {
+    setIsPending(true);
+    setIsError(false);
+    setError(null);
+
+    try {
       // Validate before sending
       const validation = validateFields(data);
       
@@ -22,53 +36,24 @@ export function useCourseUpdate() {
       }
 
       // Update via service
-      return courseService.updateCourse(courseUuid, data);
-    },
-
-    // Optimistic update - UI updates immediately
-    onMutate: async ({ courseUuid, data }) => {
-      // Cancel outgoing refetches
-      await queryClient.cancelQueries({ queryKey: ['course', courseUuid] });
-
-      // Snapshot previous value
-      const previousData = queryClient.getQueryData(['course', courseUuid]);
-
-      // Optimistically update cache
-      queryClient.setQueryData(['course', courseUuid], (old: unknown) => {
-        // Ensure 'old' is an object before spreading
-        return { ...(old as object), ...data };
-      });
-
-
-      return { previousData };
-    },
-
-    // Rollback on error
-    onError: (error, variables, context) => {
-      if (context?.previousData) {
-        queryClient.setQueryData(
-          ['course', variables.courseUuid],
-          context.previousData
-        );
-      }
+      await courseService.updateCourse(courseUuid, data);
       
+      showToast('Changes saved successfully', 'success');
+    } catch (err) {
+      const error = err instanceof Error ? err : new Error('Update failed');
+      setError(error);
+      setIsError(true);
       showToast('Failed to save changes', 'error');
       console.error('Update error:', error);
-    },
+    } finally {
+      setIsPending(false);
+    }
+  };
 
-    // Refetch on success
-    onSuccess: (_, variables) => {
-      showToast('Changes saved successfully', 'success');
-      
-      // Invalidate course data
-      queryClient.invalidateQueries({ queryKey: ['course', variables.courseUuid] });
-      
-      // Invalidate specific sections if provided
-      if (variables.invalidateKeys) {
-        variables.invalidateKeys.forEach(key => {
-          queryClient.invalidateQueries({ queryKey: key });
-        });
-      }
-    },
-  });
+  return {
+    mutate,
+    isPending,
+    isError,
+    error,
+  };
 }
